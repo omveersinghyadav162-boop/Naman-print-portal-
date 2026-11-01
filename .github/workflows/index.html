@@ -1,0 +1,102 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>NAMAN PRINT PORTAL</title>
+<style>
+:root{--navy:#12345a;--blue:#1769aa;--gold:#f5b942;--bg:#f3f6fb;--ink:#172538;--muted:#66758a;--line:#e2e8f0}
+*{box-sizing:border-box}body{margin:0;font-family:Arial, sans-serif;background:var(--bg);color:var(--ink)}
+header{background:linear-gradient(120deg,#102c4d,#1769aa);color:white;padding:18px max(18px,calc((100% - 1100px)/2));}
+.brand{display:flex;align-items:center;gap:12px}.logo{width:48px;height:48px;border-radius:14px;background:#fff;color:var(--navy);display:grid;place-items:center;font-size:25px}
+h1{font-size:22px;margin:0}.tag{font-size:12px;color:#dbeafe;margin-top:4px}
+nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}nav button{background:#ffffff20;color:white;border:1px solid #ffffff55;padding:9px 13px;border-radius:9px;cursor:pointer}
+main{max-width:1100px;margin:22px auto;padding:0 16px}.hero{background:white;border-radius:18px;padding:24px;display:flex;gap:20px;align-items:center;justify-content:space-between;box-shadow:0 5px 20px #102c4d0d}
+.hero h2{font-size:28px;margin:0 0 8px}.hero p{color:var(--muted);margin:0;line-height:1.5}.hero .stamp{font-size:64px}
+.section-title{margin:26px 0 12px;font-size:20px}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.card{background:white;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 3px 12px #102c4d08}
+.card .emoji{font-size:28px}.card h3{margin:8px 0 6px;font-size:17px}.card p{color:var(--muted);font-size:13px;line-height:1.45;min-height:36px}
+button,.btn{background:var(--blue);color:white;border:0;border-radius:9px;padding:10px 14px;cursor:pointer;font-weight:600;text-decoration:none;display:inline-block}
+button.secondary{background:#eaf2fb;color:var(--navy)}button.danger{background:#b42318}
+.panel{background:white;border:1px solid var(--line);border-radius:16px;padding:18px;margin-top:18px}
+label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}input,select,textarea{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:9px;font:inherit;background:white}
+textarea{min-height:80px}.row{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.hidden{display:none!important}.muted{color:var(--muted);font-size:13px}.pill{display:inline-block;padding:4px 8px;border-radius:99px;background:#eaf2fb;color:#164b7b;font-size:12px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);vertical-align:top}th{background:#f7f9fc}
+footer{text-align:center;color:var(--muted);font-size:12px;padding:28px 15px}
+.notice{background:#fff7e6;border:1px solid #f5d48b;color:#754c00;border-radius:10px;padding:12px;font-size:13px;line-height:1.5}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+@media(max-width:600px){.hero h2{font-size:23px}.hero .stamp{font-size:44px}table{display:block;overflow-x:auto}}
+</style>
+</head>
+<body>
+<header>
+ <div class="brand"><div class="logo">🖨️</div><div><h1>NAMAN PRINT PORTAL</h1><div class="tag">Digital Services • Online Forms • Printing</div></div></div>
+ <nav>
+  <button onclick="show('home')">होम</button><button onclick="show('services')">सेवाएँ</button><button onclick="show('order')">ऑर्डर करें</button><button onclick="show('customer')">Customer Login</button><button onclick="show('admin')">Admin Login</button>
+ </nav>
+</header>
+<main>
+<section id="home">
+ <div class="hero"><div><span class="pill">आपकी डिजिटल सेवा का साथी</span><h2>सभी प्रिंटिंग और ऑनलाइन सेवाएँ एक जगह</h2><p>डॉक्यूमेंट प्रिंट, फोटो प्रिंट, ऑनलाइन फॉर्म और कार्ड सेवाओं के लिए ऑर्डर भेजें।</p><div class="actions"><button onclick="show('services')">सेवाएँ देखें</button><button class="secondary" onclick="show('order')">ऑर्डर शुरू करें</button></div></div><div class="stamp">📄</div></div>
+ <h2 class="section-title">लोकप्रिय सेवाएँ</h2><div class="grid" id="homeCards"></div>
+ <div class="panel"><h3>संपर्क सहायता</h3><p>फोन / WhatsApp: <b>9720054993</b></p><a class="btn" target="_blank" href="https://wa.me/919720054993?text=Namaste%2C%20mujhe%20Naman%20Print%20Portal%20ki%20seva%20chahiye.">WhatsApp पर संपर्क करें</a></div>
+</section>
+<section id="services" class="hidden">
+ <h2 class="section-title">हमारी सेवाएँ</h2><div class="grid" id="serviceCards"></div>
+</section>
+<section id="order" class="hidden">
+ <h2 class="section-title">नया ऑर्डर</h2>
+ <div class="notice">कृपया केवल जरूरी जानकारी दें। Aadhaar/PAN नंबर, OTP, पासवर्ड या बैंक जानकारी इस डेमो फॉर्म में न भरें। संवेदनशील दस्तावेज़ अपलोड की सुविधा लाइव सुरक्षित सर्वर बनने के बाद जोड़ी जाएगी।</div>
+ <div class="panel"><form id="orderForm">
+  <div class="row"><div><label>आपका नाम</label><input id="custName" required placeholder="पूरा नाम"></div><div><label>मोबाइल नंबर</label><input id="custPhone" required inputmode="numeric" pattern="[0-9]{10}" maxlength="10" placeholder="10 अंकों का नंबर"></div></div>
+  <label>सेवा चुनें</label><select id="serviceSelect" required></select>
+  <div class="row"><div><label>पेज / कॉपी की संख्या</label><input id="qty" type="number" min="1" value="1" required></div><div><label>डिलीवरी का तरीका</label><select id="delivery"><option>दुकान से प्राप्त करें</option><option>उपलब्धता के अनुसार डिलीवरी पूछें</option></select></div></div>
+  <label>काम का विवरण</label><textarea id="details" placeholder="किस प्रकार की प्रिंटिंग या सहायता चाहिए?"></textarea>
+  <label><input type="checkbox" id="consent" required style="width:auto"> मैं समझता/समझती हूँ कि यह अभी डेमो ऑर्डर है।</label>
+  <div class="actions"><button type="submit">ऑर्डर तैयार करें</button></div>
+ </form><div id="orderResult" class="hidden"></div></div>
+</section>
+<section id="customer" class="hidden">
+ <h2 class="section-title">Customer Login</h2><div class="panel"><p class="muted">यह फ्रंट-एंड डेमो लॉगिन है। लाइव OTP लॉगिन के लिए सुरक्षित बैकएंड और SMS सेवा जोड़नी होगी।</p>
+ <label>मोबाइल नंबर</label><input id="loginPhone" maxlength="10" inputmode="numeric" placeholder="अपना 10 अंकों का नंबर">
+ <div class="actions"><button onclick="customerLogin()">डेमो लॉगिन</button><button class="secondary" onclick="customerLogout()">लॉगआउट</button></div><p id="customerMsg"></p><div id="customerOrders"></div></div>
+</section>
+<section id="admin" class="hidden">
+ <h2 class="section-title">Admin Panel</h2><div class="panel" id="adminLogin">
+ <p class="muted">डेमो पासवर्ड: <b>1234</b> (लाइव वेबसाइट पर इसे जरूर बदलें; यह सुरक्षित प्रमाणीकरण नहीं है।)</p>
+ <label>Admin Password</label><input id="adminPass" type="password" placeholder="पासवर्ड">
+ <div class="actions"><button onclick="adminLogin()">लॉगिन</button></div><p id="adminMsg"></p></div>
+ <div class="panel hidden" id="adminDash"><div class="row"><div><h3>ऑर्डर मैनेजमेंट</h3><p class="muted">इस ब्राउज़र में बने डेमो ऑर्डर</p></div><button class="secondary" onclick="adminLogout()">लॉगआउट</button></div><div id="ordersTable"></div></div>
+</section>
+</main>
+<footer>© 2026 NAMAN PRINT PORTAL • Demo Version • संपर्क: 9720054993</footer>
+<script>
+const services=[
+ ['📄','Document Print','PDF और डॉक्यूमेंट प्रिंटिंग'],['🖼️','Photo Print','पासपोर्ट साइज और सामान्य फोटो'],['🪪','PAN Card सहायता','PAN आवेदन / सुधार की आधिकारिक प्रक्रिया में सहायता'],['🆔','Aadhaar सहायता','डाउनलोड / अपडेट की आधिकारिक प्रक्रिया की जानकारी'],['🚘','Driving Licence','DL सेवाओं की जानकारी और फॉर्म सहायता'],['🗳️','Voter ID','मतदाता पहचान पत्र सेवाओं की जानकारी'],['🍚','Ration Card','राशन कार्ड सेवाओं की जानकारी'],['📋','Online Forms','ऑनलाइन आवेदन फॉर्म भरने में सहायता'],['🎓','Admit Card','एडमिट कार्ड डाउनलोड और प्रिंट'],['📑','PDF Print','PDF प्रिंट और कॉपी'],['📠','Photocopy','ब्लैक एंड व्हाइट / कलर कॉपी'],['🖨️','Other Services','अन्य डिजिटल और प्रिंटिंग सेवाएँ']
+];
+function card(s){return `<div class="card"><div class="emoji">${s[0]}</div><h3>${s[1]}</h3><p>${s[2]}</p><button onclick="selectService('${s[1].replace(/'/g,"\\'")}')">ऑर्डर करें</button></div>`}
+document.getElementById('homeCards').innerHTML=services.slice(0,4).map(card).join('');
+document.getElementById('serviceCards').innerHTML=services.map(card).join('');
+document.getElementById('serviceSelect').innerHTML='<option value="">सेवा चुनें</option>'+services.map(s=>`<option>${s[1]}</option>`).join('');
+function show(id){['home','services','order','customer','admin'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));window.scrollTo(0,0)}
+function selectService(s){document.getElementById('serviceSelect').value=s;show('order')}
+function getOrders(){try{return JSON.parse(localStorage.getItem('namanDemoOrders')||'[]')}catch(e){return []}}
+function setOrders(a){localStorage.setItem('namanDemoOrders',JSON.stringify(a))}
+document.getElementById('orderForm').addEventListener('submit',e=>{
+ e.preventDefault();const order={id:'NPP'+Date.now().toString().slice(-7),name:custName.value.trim(),phone:custPhone.value.trim(),service:serviceSelect.value,qty:qty.value,delivery:delivery.value,details:details.value,status:'नया ऑर्डर',date:new Date().toLocaleString('hi-IN')};
+ const a=getOrders();a.unshift(order);setOrders(a);
+ const msg=`नया डेमो ऑर्डर%0Aऑर्डर: ${order.id}%0Aनाम: ${encodeURIComponent(order.name)}%0Aमोबाइल: ${order.phone}%0Aसेवा: ${encodeURIComponent(order.service)}%0Aमात्रा: ${order.qty}%0Aविवरण: ${encodeURIComponent(order.details)}`;
+ orderResult.classList.remove('hidden');orderResult.innerHTML=`<div class="notice"><b>डेमो ऑर्डर तैयार!</b><br>ऑर्डर नंबर: ${order.id}<br>इस डेमो में ऑर्डर इसी ब्राउज़र में सेव हुआ है। WhatsApp पर भेजने के लिए नीचे क्लिक करें।</div><div class="actions"><a class="btn" target="_blank" href="https://wa.me/919720054993?text=${msg}">WhatsApp पर ऑर्डर भेजें</a></div>`;
+ e.target.reset();qty.value=1;
+});
+function customerLogin(){let p=loginPhone.value.trim();if(!/^\d{10}$/.test(p)){customerMsg.textContent='कृपया सही 10 अंकों का मोबाइल नंबर डालें।';return}localStorage.setItem('namanDemoCustomer',p);customerMsg.textContent='डेमो लॉगिन सफल।';renderCustomer()}
+function customerLogout(){localStorage.removeItem('namanDemoCustomer');customerMsg.textContent='लॉगआउट हो गया।';customerOrders.innerHTML=''}
+function renderCustomer(){let p=localStorage.getItem('namanDemoCustomer');if(!p)return;let a=getOrders().filter(o=>o.phone===p);customerOrders.innerHTML='<h3>आपके ऑर्डर</h3>'+(a.length?a.map(o=>`<div class="card"><b>${o.id}</b> — ${o.service}<br><span class="pill">${o.status}</span><p class="muted">${o.date}</p></div>`).join(''):'<p class="muted">इस नंबर से अभी कोई डेमो ऑर्डर नहीं मिला।</p>')}
+function adminLogin(){if(adminPass.value==='1234'){adminLoginBox();adminMsg.textContent=''}else adminMsg.textContent='पासवर्ड सही नहीं है।'}
+function adminLoginBox(){document.getElementById('adminLogin').classList.add('hidden');adminDash.classList.remove('hidden');renderAdmin()}
+function adminLogout(){adminDash.classList.add('hidden');document.getElementById('adminLogin').classList.remove('hidden');adminPass.value=''}
+function renderAdmin(){let a=getOrders();ordersTable.innerHTML=a.length?`<table><thead><tr><th>ऑर्डर</th><th>ग्राहक</th><th>सेवा</th><th>स्टेटस</th><th>अपडेट</th></tr></thead><tbody>${a.map((o,i)=>`<tr><td>${o.id}<br><span class="muted">${o.date}</span></td><td>${o.name}<br>${o.phone}</td><td>${o.service}<br>Qty: ${o.qty}</td><td>${o.status}</td><td><select onchange="updateStatus('${o.id}',this.value)"><option ${o.status==='नया ऑर्डर'?'selected':''}>नया ऑर्डर</option><option ${o.status==='स्वीकार किया'?'selected':''}>स्वीकार किया</option><option ${o.status==='काम जारी'?'selected':''}>काम जारी</option><option ${o.status==='पूरा हुआ'?'selected':''}>पूरा हुआ</option><option ${o.status==='रद्द'?'selected':''}>रद्द</option></select></td></tr>`).join('')}</tbody></table>`:'<p class="muted">अभी कोई ऑर्डर नहीं है।</p>'}
+function updateStatus(id,s){let a=getOrders();let o=a.find(x=>x.id===id);if(o)o.status=s;setOrders(a);renderAdmin()}
+if(localStorage.getItem('namanDemoCustomer')){loginPhone.value=localStorage.getItem('namanDemoCustomer');renderCustomer()}
+</script>
+</body></html>
