@@ -98,5 +98,185 @@ function adminLogout(){adminDash.classList.add('hidden');document.getElementById
 function renderAdmin(){let a=getOrders();ordersTable.innerHTML=a.length?`<table><thead><tr><th>ऑर्डर</th><th>ग्राहक</th><th>सेवा</th><th>स्टेटस</th><th>अपडेट</th></tr></thead><tbody>${a.map((o,i)=>`<tr><td>${o.id}<br><span class="muted">${o.date}</span></td><td>${o.name}<br>${o.phone}</td><td>${o.service}<br>Qty: ${o.qty}</td><td>${o.status}</td><td><select onchange="updateStatus('${o.id}',this.value)"><option ${o.status==='नया ऑर्डर'?'selected':''}>नया ऑर्डर</option><option ${o.status==='स्वीकार किया'?'selected':''}>स्वीकार किया</option><option ${o.status==='काम जारी'?'selected':''}>काम जारी</option><option ${o.status==='पूरा हुआ'?'selected':''}>पूरा हुआ</option><option ${o.status==='रद्द'?'selected':''}>रद्द</option></select></td></tr>`).join('')}</tbody></table>`:'<p class="muted">अभी कोई ऑर्डर नहीं है।</p>'}
 function updateStatus(id,s){let a=getOrders();let o=a.find(x=>x.id===id);if(o)o.status=s;setOrders(a);renderAdmin()}
 if(localStorage.getItem('namanDemoCustomer')){loginPhone.value=localStorage.getItem('namanDemoCustomer');renderCustomer()}
-</script>
+</script>// NAMAN PRINT PORTAL - SUPABASE CONNECTION
+(function () {
+  const SUPABASE_URL = 'https://nkcqfrfbxjdklprtbmwb.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_sNCyxl8c_knUdRd5Zg6UkQ_QFkKwPom';
+
+  const loader = document.createElement('script');
+  loader.src = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2';
+
+  loader.onload = async function () {
+    const db = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    window.namanDB = db;
+
+    // Customer registration and login
+    const customer = document.getElementById('customer');
+    customer.innerHTML = `
+      <h2 class="section-title">Customer Login / Registration</h2>
+      <div class="panel">
+        <label>Email</label>
+        <input id="userEmail" type="email" placeholder="Email">
+        <label>Password</label>
+        <input id="userPassword" type="password" placeholder="Password">
+        <div class="actions">
+          <button id="signupBtn">Register</button>
+          <button id="signinBtn">Login</button>
+          <button id="logoutBtn" class="secondary">Logout</button>
+        </div>
+        <p id="authMessage"></p>
+      </div>
+    `;
+
+    async function register() {
+      const email = document.getElementById('userEmail').value.trim();
+      const password = document.getElementById('userPassword').value;
+
+      const { error } = await db.auth.signUp({ email, password });
+      document.getElementById('authMessage').textContent =
+        error ? error.message : 'Registration successful. Email confirmation may be required.';
+    }
+
+    async function login() {
+      const email = document.getElementById('userEmail').value.trim();
+      const password = document.getElementById('userPassword').value;
+
+      const { error } = await db.auth.signInWithPassword({
+        email, password
+      });
+
+      document.getElementById('authMessage').textContent =
+        error ? error.message : 'Login successful!';
+    }
+
+    async function logout() {
+      await db.auth.signOut();
+      document.getElementById('authMessage').textContent = 'Logged out.';
+    }
+
+    document.getElementById('signupBtn').onclick = register;
+    document.getElementById('signinBtn').onclick = login;
+    document.getElementById('logoutBtn').onclick = logout;
+
+    // Admin login
+    window.adminLogin = async function () {
+      const password = document.getElementById('adminPass').value;
+
+      const { error } = await db.auth.signInWithPassword({
+        email: 'omveersinghyadav162@gmail.com',
+        password
+      });
+
+      if (error) {
+        adminMsg.textContent = error.message;
+        return;
+      }
+
+      const { data } = await db.auth.getUser();
+
+      if (data.user.email !== 'omveersinghyadav162@gmail.com') {
+        await db.auth.signOut();
+        adminMsg.textContent = 'Admin access denied.';
+        return;
+      }
+
+      adminLoginBox();
+      adminMsg.textContent = 'Admin login successful.';
+    };
+
+    // Save orders in Supabase
+    const oldForm = document.getElementById('orderForm');
+    const newForm = oldForm.cloneNode(true);
+    oldForm.replaceWith(newForm);
+
+    newForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const { data: auth } = await db.auth.getUser();
+
+      if (!auth.user) {
+        alert('पहले Customer Login कीजिए।');
+        show('customer');
+        return;
+      }
+
+      const order = {
+        order_no: 'NPP' + Date.now().toString().slice(-7),
+        user_id: auth.user.id,
+        name: custName.value.trim(),
+        phone: custPhone.value.trim(),
+        service: serviceSelect.value,
+        qty: Number(qty.value),
+        delivery: delivery.value,
+        details: details.value,
+        status: 'नया ऑर्डर'
+      };
+
+      const { error } = await db.from('orders').insert(order);
+
+      if (error) {
+        alert('Order Error: ' + error.message);
+        return;
+      }
+
+      orderResult.classList.remove('hidden');
+      orderResult.innerHTML =
+        '<div class="notice">ऑर्डर सफलतापूर्वक सेव हुआ!<br>ऑर्डर नंबर: ' +
+        order.order_no + '</div>';
+
+      newForm.reset();
+    });
+
+    // Admin order list
+    window.renderAdmin = async function () {
+      const { data: auth } = await db.auth.getUser();
+
+      if (auth.user?.email !== 'omveersinghyadav162@gmail.com') {
+        ordersTable.textContent = 'Admin login required.';
+        return;
+      }
+
+      const { data, error } = await db.from('orders')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        ordersTable.textContent = error.message;
+        return;
+      }
+
+      ordersTable.innerHTML = data.map(o => `
+        <div class="card">
+          <b>${o.order_no}</b><br>
+          ${o.name} - ${o.phone}<br>
+          ${o.service}<br>
+          Status: ${o.status}
+          <select onchange="window.updateNamanStatus('${o.id}',this.value)">
+            <option>नया ऑर्डर</option>
+            <option>स्वीकार किया</option>
+            <option>काम जारी</option>
+            <option>पूरा हुआ</option>
+            <option>रद्द</option>
+          </select>
+        </div>
+      `).join('');
+    };
+
+    window.updateNamanStatus = async function (id, status) {
+      const { error } = await db.from('orders')
+        .update({ status }).eq('id', id);
+
+      if (error) alert(error.message);
+      else renderAdmin();
+    };
+
+    console.log('NAMAN PRINT PORTAL Supabase Connected');
+  };
+
+  document.head.appendChild(loader);
+})();
 </body></html>
