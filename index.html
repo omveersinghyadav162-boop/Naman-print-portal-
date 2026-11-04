@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -9,35 +10,30 @@
 *{box-sizing:border-box}
 body{margin:0;background:#f1f5fb;font-family:Arial;color:#172538}
 header{background:#12345a;color:white;padding:20px;text-align:center}
-header h2{margin:0}
-.container{max-width:900px;margin:20px auto;padding:12px}
-.card{background:white;padding:20px;margin-bottom:16px;border-radius:12px;box-shadow:0 3px 12px #0001}
+.container{max-width:950px;margin:20px auto;padding:12px}
+.card{background:white;padding:18px;margin-bottom:16px;border-radius:12px;box-shadow:0 3px 12px #0001}
 input,select,textarea{width:100%;padding:12px;margin:7px 0 14px;border:1px solid #ccd5e0;border-radius:7px;font-size:15px}
-button{background:#1769aa;color:white;border:0;padding:12px 18px;border-radius:7px;cursor:pointer;margin:4px}
-button:disabled{opacity:.5}
-.red{background:#c62828}
+button{background:#1769aa;color:white;border:0;padding:12px 18px;border-radius:7px;margin:4px}
 .green{background:#18864b}
+.red{background:#c62828}
 .hidden{display:none}
-table{width:100%;border-collapse:collapse;min-width:650px}
-th,td{padding:10px;border:1px solid #ddd;text-align:left;font-size:13px}
-th{background:#e8f1fa}
 .tablewrap{overflow-x:auto}
-.msg{padding:10px;color:#1769aa}
-h3{color:#12345a}
+table{width:100%;border-collapse:collapse;min-width:650px}
+td,th{padding:10px;border:1px solid #ddd;text-align:left}
+th{background:#e8f1fa}
+.msg{color:#1769aa;padding:8px}
 </style>
 </head>
 <body>
-
 <header>
 <h2>NAMAN PRINT PORTAL</h2>
 <p>Online Printing & Digital Services</p>
 </header>
 
 <div class="container">
-
 <div class="card" id="authBox">
-<h3>Customer / Admin Login</h3>
-<input id="email" type="email" placeholder="Email Address">
+<h3>Login / Registration</h3>
+<input id="email" type="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
 <button class="green" onclick="register()">New Registration</button>
@@ -45,13 +41,10 @@ h3{color:#12345a}
 </div>
 
 <div id="customerBox" class="hidden">
-
 <div class="card">
 <h3>नया ऑर्डर बुक करें</h3>
 <input id="customerName" placeholder="ग्राहक का नाम">
-<input id="phone" placeholder="मोबाइल नंबर" type="tel">
-
-<label>Service चुनें</label>
+<input id="mobile" placeholder="मोबाइल नंबर" type="tel">
 <select id="service">
 <option value="">Service चुनें</option>
 <option>PAN Card</option>
@@ -62,26 +55,20 @@ h3{color:#12345a}
 <option>Online Form</option>
 <option>Other</option>
 </select>
-
-<input id="qty" type="number" min="1" value="1" placeholder="Quantity">
-
+<input id="qty" type="number" min="1" value="1">
 <select id="delivery">
-<option value="Normal">Normal Delivery</option>
-<option value="Urgent">Urgent Delivery</option>
+<option>Normal</option>
+<option>Urgent</option>
 </select>
-
 <textarea id="details" placeholder="अन्य जानकारी"></textarea>
-
-<button id="orderBtn" class="green" onclick="placeOrder()">ऑर्डर बुक करें</button>
+<button class="green" onclick="placeOrder()" id="orderBtn">ऑर्डर बुक करें</button>
 <p id="orderMsg" class="msg"></p>
 </div>
-
 <div class="card">
 <h3>मेरे ऑर्डर</h3>
 <button onclick="myOrders()">Refresh Orders</button>
 <div id="myOrderList"></div>
 </div>
-
 </div>
 
 <div id="adminBox" class="hidden">
@@ -91,17 +78,10 @@ h3{color:#12345a}
 <button onclick="loadOrders()">Refresh Orders</button>
 <div class="tablewrap">
 <table>
-<thead>
-<tr>
-<th>Order No.</th>
-<th>Customer</th>
-<th>Mobile</th>
-<th>Service</th>
-<th>Qty</th>
-<th>Status</th>
-<th>Update</th>
-</tr>
-</thead>
+<thead><tr>
+<th>Order No.</th><th>Customer</th><th>Mobile</th>
+<th>Service</th><th>Qty</th><th>Status</th><th>Update</th>
+</tr></thead>
 <tbody id="ordersList"></tbody>
 </table>
 </div>
@@ -112,58 +92,38 @@ h3{color:#12345a}
 <div class="card hidden" id="logoutBox">
 <button class="red" onclick="logout()">Logout</button>
 </div>
-
 </div>
 
 <script>
 const SUPABASE_URL="https://nkcqfrfbxjdklprtbmwb.supabase.co";
 const SUPABASE_KEY="sb_publishable_sNCyxl8c_knUdRd5Zg6UkQ_QFkKwPom";
-
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const ADMIN_EMAIL="omveersinghyadav162@gmail.com";
-
 let currentUser=null;
 
+function el(id){return document.getElementById(id)}
 function show(id){
-["authBox","customerBox","adminBox","logoutBox"].forEach(x=>{
-document.getElementById(x).classList.add("hidden");
-});
-document.getElementById(id).classList.remove("hidden");
+["authBox","customerBox","adminBox","logoutBox"].forEach(x=>el(x).classList.add("hidden"));
+el(id).classList.remove("hidden");
 }
-
 async function register(){
-const email=document.getElementById("email").value.trim();
-const password=document.getElementById("password").value;
-
-if(!email || password.length<6){
-authMsg.textContent="Email और कम से कम 6 अक्षर का Password डालें";
-return;
+let email=el("email").value.trim(),password=el("password").value;
+if(!email||password.length<6){el("authMsg").textContent="Email और कम से कम 6 अक्षर का Password डालें";return}
+let {error}=await db.auth.signUp({email,password});
+el("authMsg").textContent=error?error.message:"Registration सफल!";
 }
-
-const {error}=await db.auth.signUp({email,password});
-authMsg.textContent=error?error.message:"Registration सफल! Email confirmation की जरूरत हो सकती है।";
-}
-
 async function login(){
-const email=document.getElementById("email").value.trim();
-const password=document.getElementById("password").value;
-
-const {data,error}=await db.auth.signInWithPassword({email,password});
-
-if(error){
-authMsg.textContent=error.message;
-return;
-}
-
+let {data,error}=await db.auth.signInWithPassword({
+email:el("email").value.trim(),
+password:el("password").value
+});
+if(error){el("authMsg").textContent=error.message;return}
 currentUser=data.user;
-openDashboard();
+await dashboard();
 }
-
-async function openDashboard(){
+async function dashboard(){
 if(!currentUser)return;
-
-show("logoutBox");
-
+el("logoutBox").classList.remove("hidden");
 if(currentUser.email.toLowerCase()===ADMIN_EMAIL.toLowerCase()){
 show("adminBox");
 await loadOrders();
@@ -172,143 +132,95 @@ show("customerBox");
 await myOrders();
 }
 }
-
 async function placeOrder(){
-const name=document.getElementById("customerName").value.trim();
-const phone=document.getElementById("phone").value.trim();
-const service=document.getElementById("service").value;
-const qty=Number(document.getElementById("qty").value);
-const delivery=document.getElementById("delivery").value;
-const details=document.getElementById("details").value.trim();
-
-if(!name||!phone||!service||qty<1){
-orderMsg.textContent="सभी जरूरी जानकारी भरें";
-return;
+let name=el("customerName").value.trim();
+let mobile=el("mobile").value.trim();
+let service=el("service").value;
+let qty=Number(el("qty").value);
+if(!name||!mobile||!service||qty<1){
+el("orderMsg").textContent="सभी जरूरी जानकारी भरें";return;
 }
-
-const order={
-order_no:"NPP"+Date.now(),
+let number="NPP"+Date.now();
+let order={
+order_number:number,
+customer_name:name,
+mobile:mobile,
+service_name:service,
+order_no:number,
 user_id:currentUser.id,
 name:name,
-phone:phone,
-service:service,
+phone:mobile,
 qty:qty,
-delivery:delivery,
-details:details,
+delivery:el("delivery").value,
+details:el("details").value.trim(),
+services:service,
 status:"नया ऑर्डर"
 };
-
-orderBtn.disabled=true;
-orderMsg.textContent="ऑर्डर सेव हो रहा है...";
-
-const {data,error}=await db.from("orders").insert(order).select();
-
-orderBtn.disabled=false;
-
-if(error){
-orderMsg.textContent="Error: "+error.message;
-return;
+el("orderBtn").disabled=true;
+let {data,error}=await db.from("orders").insert(order).select();
+el("orderBtn").disabled=false;
+if(error){el("orderMsg").textContent="Error: "+error.message;return}
+el("orderMsg").textContent="ऑर्डर सफल! Order No: "+number;
+el("customerName").value="";
+el("mobile").value="";
+el("service").value="";
+el("qty").value=1;
+el("details").value="";
+await myOrders();
 }
-
-orderMsg.textContent="ऑर्डर सफलतापूर्वक सेव हुआ! Order No: "+data[0].order_no;
-
-document.getElementById("service").value="";
-document.getElementById("details").value="";
-document.getElementById("qty").value=1;
-
-myOrders();
-}
-
 async function myOrders(){
-const {data,error}=await db.from("orders")
-.select("*")
-.eq("user_id",currentUser.id)
-.order("created_at",{ascending:false});
-
-if(error){
-myOrderList.textContent=error.message;
-return;
-}
-
-if(!data.length){
-myOrderList.textContent="अभी कोई ऑर्डर नहीं है।";
-return;
-}
-
-myOrderList.innerHTML=data.map(o=>`
+let {data,error}=await db.from("orders").select("*")
+.eq("user_id",currentUser.id).order("created_at",{ascending:false});
+if(error){el("myOrderList").textContent=error.message;return}
+if(!data.length){el("myOrderList").textContent="अभी कोई ऑर्डर नहीं है";return}
+el("myOrderList").innerHTML=data.map(o=>`
 <div class="card">
-<b>Order:</b> ${o.order_no||o.id}<br>
-<b>Service:</b> ${o.service}<br>
-<b>Quantity:</b> ${o.qty}<br>
-<b>Status:</b> ${o.status}
-</div>
-`).join("");
+<b>Order:</b> ${safe(o.order_number||o.order_no)}<br>
+<b>Customer:</b> ${safe(o.customer_name||o.name)}<br>
+<b>Service:</b> ${safe(o.service_name||o.services)}<br>
+<b>Qty:</b> ${o.qty||""}<br>
+<b>Status:</b> ${safe(o.status)}
+</div>`).join("");
 }
-
+function safe(value){
+return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+}
 async function loadOrders(){
-const {data,error}=await db.from("orders")
-.select("*")
-.order("created_at",{ascending:false});
-
-if(error){
-adminMsg.textContent="Error: "+error.message;
-return;
-}
-
-totalOrders.textContent="कुल ऑर्डर: "+data.length;
-
-ordersList.innerHTML=data.map(o=>`
+let {data,error}=await db.from("orders").select("*").order("created_at",{ascending:false});
+if(error){el("adminMsg").textContent=error.message;return}
+el("totalOrders").textContent="कुल ऑर्डर: "+data.length;
+el("ordersList").innerHTML=data.map(o=>`
 <tr>
-<td>${o.order_no||o.id}</td>
-<td>${o.name||""}</td>
-<td>${o.phone||""}</td>
-<td>${o.service||""}</td>
+<td>${safe(o.order_number||o.order_no)}</td>
+<td>${safe(o.customer_name||o.name)}</td>
+<td>${safe(o.mobile||o.phone)}</td>
+<td>${safe(o.service_name||o.services)}</td>
 <td>${o.qty||""}</td>
-<td>${o.status||""}</td>
+<td>${safe(o.status)}</td>
 <td>
 <select id="status${o.id}">
-<option ${o.status==="नया ऑर्डर"?"selected":""}>नया ऑर्डर</option>
-<option ${o.status==="स्वीकार किया"?"selected":""}>स्वीकार किया</option>
-<option ${o.status==="काम जारी"?"selected":""}>काम जारी</option>
-<option ${o.status==="पूरा हुआ"?"selected":""}>पूरा हुआ</option>
-<option ${o.status==="रद्द"?"selected":""}>रद्द</option>
+${["नया ऑर्डर","स्वीकार किया","काम जारी","पूरा हुआ","रद्द"].map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}
 </select>
-<button onclick="updateStatus('${o.id}')">Update</button>
+<button onclick="updateStatus(${Number(o.id)})">Update</button>
 </td>
-</tr>
-`).join("");
+</tr>`).join("");
 }
-
 async function updateStatus(id){
-const status=document.getElementById("status"+id).value;
-
-const {error}=await db.from("orders")
-.update({status:status})
-.eq("id",id);
-
-if(error){
-adminMsg.textContent=error.message;
-return;
+let status=el("status"+id).value;
+let {error}=await db.from("orders").update({status}).eq("id",id);
+if(error){el("adminMsg").textContent=error.message;return}
+el("adminMsg").textContent="Status Update हो गया!";
+await loadOrders();
 }
-
-adminMsg.textContent="Status सफलतापूर्वक Update हुआ!";
-loadOrders();
-}
-
 async function logout(){
 await db.auth.signOut();
 currentUser=null;
 show("authBox");
-authMsg.textContent="आप Logout हो गए हैं।";
+el("authMsg").textContent="Logout सफल!";
 }
-
 db.auth.getSession().then(({data})=>{
-if(data.session){
-currentUser=data.session.user;
-openDashboard();
-}else{
-show("authBox");
-}
+if(data.session){currentUser=data.session.user;dashboard()}
+else show("authBox");
 });
 </script>
 </body>
