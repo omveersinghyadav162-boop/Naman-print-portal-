@@ -2,373 +2,314 @@
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>NAMAN PRINT PORTAL</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{--blue:#1769aa;--bg:#f3f6fb}
 *{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#172538}
-header{background:linear-gradient(120deg,#102c4d,#1769aa);color:white;padding:20px}
-.brand{font-size:24px;font-weight:bold}
-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
-button{background:#1769aa;color:white;border:0;border-radius:8px;padding:11px 15px;cursor:pointer;font-weight:bold;margin:3px}
-nav button{background:#ffffff25}
-main{max-width:1000px;margin:22px auto;padding:0 15px}
-.panel,.card{background:white;padding:18px;border-radius:14px;margin:15px 0;border:1px solid #e2e8f0}
-input,select,textarea{display:block;width:100%;padding:12px;margin:7px 0 14px;border:1px solid #cbd5e1;border-radius:8px;font-size:15px}
-label{font-weight:bold;font-size:14px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
-.hidden{display:none!important}
-.notice{background:#fff7e6;padding:13px;border-radius:9px;margin:12px 0}
-.actions{display:flex;gap:9px;flex-wrap:wrap}
-footer{text-align:center;padding:25px;color:#66758a}
-.status{padding:8px;background:#eaf2ff;border-radius:7px;display:inline-block}
+body{margin:0;background:#f1f5fb;font-family:Arial;color:#172538}
+header{background:#12345a;color:white;padding:20px;text-align:center}
+header h2{margin:0}
+.container{max-width:900px;margin:20px auto;padding:12px}
+.card{background:white;padding:20px;margin-bottom:16px;border-radius:12px;box-shadow:0 3px 12px #0001}
+input,select,textarea{width:100%;padding:12px;margin:7px 0 14px;border:1px solid #ccd5e0;border-radius:7px;font-size:15px}
+button{background:#1769aa;color:white;border:0;padding:12px 18px;border-radius:7px;cursor:pointer;margin:4px}
+button:disabled{opacity:.5}
+.red{background:#c62828}
+.green{background:#18864b}
+.hidden{display:none}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{padding:10px;border:1px solid #ddd;text-align:left;font-size:13px}
+th{background:#e8f1fa}
+.tablewrap{overflow-x:auto}
+.msg{padding:10px;color:#1769aa}
+h3{color:#12345a}
 </style>
 </head>
 <body>
+
 <header>
-<div class="brand">🖨️ NAMAN PRINT PORTAL</div>
-<p>Digital Services • Online Forms • Printing</p>
-<nav>
-<button onclick="show('home')">होम</button>
-<button onclick="show('services')">सेवाएँ</button>
-<button onclick="show('order')">ऑर्डर</button>
-<button onclick="show('customer')">Customer Login</button>
-<button onclick="show('admin')">Admin Login</button>
-</nav>
+<h2>NAMAN PRINT PORTAL</h2>
+<p>Online Printing & Digital Services</p>
 </header>
-<main>
-<section id="home">
-<div class="panel">
-<h2>आपका डिजिटल सेवा केंद्र</h2>
-<p>सभी प्रिंटिंग और ऑनलाइन सेवाएँ एक जगह।</p>
-<button onclick="show('services')">सेवाएँ देखें</button>
-<button onclick="show('order')">ऑर्डर करें</button>
-</div>
-<div class="panel">
-<h3>मोबाइल नंबर से ऑर्डर खोजें</h3>
-<input id="searchMobile" type="tel" maxlength="10" placeholder="10 अंकों का मोबाइल नंबर">
-<button onclick="searchOrders()">ऑर्डर खोजें</button>
-<div id="searchResults"></div>
-<p>मोबाइल: 9720054993</p>
-<a href="https://wa.me/919720054993">WhatsApp पर संपर्क करें</a>
-</div>
-</section>
 
-<section id="services" class="hidden">
-<h2>हमारी सेवाएँ</h2>
-<div class="grid" id="serviceCards"></div>
-</section>
+<div class="container">
 
-<section id="customer" class="hidden">
-<h2>Customer Dashboard</h2>
-<div class="panel" id="authBox">
-<h3>Customer Login / Registration</h3>
-<label>Email</label>
-<input id="userEmail" type="email" placeholder="अपना Email डालें">
-<label>Password</label>
-<input id="userPassword" type="password" placeholder="कम से कम 6 अक्षर">
-<button onclick="register()">Register</button>
+<div class="card" id="authBox">
+<h3>Customer / Admin Login</h3>
+<input id="email" type="email" placeholder="Email Address">
+<input id="password" type="password" placeholder="Password">
 <button onclick="login()">Login</button>
-<p id="authMessage"></p>
+<button class="green" onclick="register()">New Registration</button>
+<p id="authMsg" class="msg"></p>
 </div>
-<div class="panel hidden" id="customerDashboard">
-<h3>स्वागत है!</h3>
-<p id="customerWelcome"></p>
-<button onclick="show('order')">नया ऑर्डर करें</button>
-<button onclick="renderCustomerOrders()">Refresh Orders</button>
-<button onclick="logout()">Logout</button>
-<div id="customerOrders"></div>
-</div>
-</section>
 
-<section id="order" class="hidden">
-<h2>नया ऑर्डर</h2>
-<div class="notice">ऑर्डर के लिए Customer Login जरूरी है। Aadhaar नंबर या OTP यहाँ न डालें।</div>
-<div class="panel">
-<form id="orderForm">
-<label>आपका नाम</label>
-<input id="custName" required placeholder="पूरा नाम">
-<label>मोबाइल नंबर</label>
-<input id="custPhone" required maxlength="10" pattern="[0-9]{10}" placeholder="10 अंकों का मोबाइल नंबर">
-<label>सेवा चुनें</label>
-<select id="serviceSelect" required>
-<option value="">सेवा चुनें</option>
-<option>Document Print</option>
-<option>Photo Print</option>
-<option>PAN Card सहायता</option>
-<option>Aadhaar सहायता</option>
-<option>Driving Licence</option>
-<option>Voter ID</option>
-<option>Ration Card</option>
-<option>Online Forms</option>
-<option>Admit Card</option>
-<option>PDF Print</option>
+<div id="customerBox" class="hidden">
+
+<div class="card">
+<h3>नया ऑर्डर बुक करें</h3>
+<input id="customerName" placeholder="ग्राहक का नाम">
+<input id="phone" placeholder="मोबाइल नंबर" type="tel">
+
+<label>Service चुनें</label>
+<select id="service">
+<option value="">Service चुनें</option>
+<option>PAN Card</option>
+<option>Aadhaar Card</option>
+<option>Printout</option>
 <option>Photocopy</option>
-<option>Other Services</option>
+<option>Photo</option>
+<option>Online Form</option>
+<option>Other</option>
 </select>
-<label>पेज / कॉपी की संख्या</label>
-<input id="qty" type="number" min="1" value="1" required>
-<label>डिलीवरी</label>
+
+<input id="qty" type="number" min="1" value="1" placeholder="Quantity">
+
 <select id="delivery">
-<option>दुकान से प्राप्त करें</option>
-<option>डिलीवरी के बारे में पूछें</option>
+<option value="Normal">Normal Delivery</option>
+<option value="Urgent">Urgent Delivery</option>
 </select>
-<label>काम का विवरण</label>
-<textarea id="details" placeholder="काम की जानकारी"></textarea>
-<button type="submit" id="orderBtn">ऑर्डर भेजें</button>
-</form>
-<div id="orderResult"></div>
-</div>
-</section>
 
-<section id="admin" class="hidden">
-<h2>Admin Panel</h2>
-<div class="panel" id="adminLoginBox">
-<label>Admin Email</label>
-<input id="adminEmail" type="email" value="omveersinghyadav162@gmail.com">
-<label>Password</label>
-<input id="adminPass" type="password" placeholder="Admin Password">
-<button onclick="adminLogin()">Admin Login</button>
-<p id="adminMsg"></p>
-</div>
-<div class="panel hidden" id="adminDash">
-<h3>सभी ग्राहक ऑर्डर</h3>
-<button onclick="renderAdmin()">Refresh Orders</button>
-<button onclick="adminLogout()">Logout</button>
-<div id="ordersTable"></div>
-</div>
-</section>
-</main>
+<textarea id="details" placeholder="अन्य जानकारी"></textarea>
 
-<footer>
-© 2026 NAMAN PRINT PORTAL<br>
-Contact: 9720054993
-</footer>
+<button id="orderBtn" class="green" onclick="placeOrder()">ऑर्डर बुक करें</button>
+<p id="orderMsg" class="msg"></p>
+</div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<div class="card">
+<h3>मेरे ऑर्डर</h3>
+<button onclick="myOrders()">Refresh Orders</button>
+<div id="myOrderList"></div>
+</div>
+
+</div>
+
+<div id="adminBox" class="hidden">
+<div class="card">
+<h3>Admin Dashboard</h3>
+<h2 id="totalOrders">कुल ऑर्डर: 0</h2>
+<button onclick="loadOrders()">Refresh Orders</button>
+<div class="tablewrap">
+<table>
+<thead>
+<tr>
+<th>Order No.</th>
+<th>Customer</th>
+<th>Mobile</th>
+<th>Service</th>
+<th>Qty</th>
+<th>Status</th>
+<th>Update</th>
+</tr>
+</thead>
+<tbody id="ordersList"></tbody>
+</table>
+</div>
+<p id="adminMsg" class="msg"></p>
+</div>
+</div>
+
+<div class="card hidden" id="logoutBox">
+<button class="red" onclick="logout()">Logout</button>
+</div>
+
+</div>
+
 <script>
-const SUPABASE_URL='https://nkcqfrfbxjdklprtbmwb.supabase.co';
-const SUPABASE_KEY='sb_publishable_sNCyxl8c_knUdRd5Zg6UkQ_QFkKwPom';
-const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
-const $=id=>document.getElementById(id);
-const ADMIN_EMAIL='omveersinghyadav162@gmail.com';
+const SUPABASE_URL="https://nkcqfrfbxjdklprtbmwb.supabase.co";
+const SUPABASE_KEY="sb_publishable_sNCyxl8c_knUdRd5Zg6UkQ_QFkKwPom";
+
+const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const ADMIN_EMAIL="omveersinghyadav162@gmail.com";
+
+let currentUser=null;
 
 function show(id){
-['home','services','customer','order','admin'].forEach(s=>{
-$(s).classList.toggle('hidden',s!==id);
+["authBox","customerBox","adminBox","logoutBox"].forEach(x=>{
+document.getElementById(x).classList.add("hidden");
 });
-window.scrollTo(0,0);
+document.getElementById(id).classList.remove("hidden");
 }
 
-const services=[
-'Document Print','Photo Print','PAN Card सहायता',
-'Aadhaar सहायता','Driving Licence','Voter ID',
-'Ration Card','Online Forms','Admit Card',
-'PDF Print','Photocopy','Other Services'
-];
-
-$('serviceCards').innerHTML=services.map(s=>`
-<div class="card">
-<h3>${s}</h3>
-<button onclick="selectService('${s}')">ऑर्डर करें</button>
-</div>`).join('');
-
-function selectService(s){
-$('serviceSelect').value=s;
-show('order');
-}
 async function register(){
-const email=$('userEmail').value.trim();
-const password=$('userPassword').value;
-if(!email||password.length<6){
-$('authMessage').textContent='सही Email और कम से कम 6 अक्षर का Password डालें।';
+const email=document.getElementById("email").value.trim();
+const password=document.getElementById("password").value;
+
+if(!email || password.length<6){
+authMsg.textContent="Email और कम से कम 6 अक्षर का Password डालें";
 return;
 }
-$('authMessage').textContent='Registration हो रहा है...';
-try{
-const {data,error}=await db.auth.signUp({email,password});
-if(error)throw error;
-if(data.session)await openCustomerDashboard(data.user);
-else $('authMessage').textContent='Registration सफल! Email confirmation करके Login करें।';
-}catch(e){$('authMessage').textContent='Error: '+e.message;}
+
+const {error}=await db.auth.signUp({email,password});
+authMsg.textContent=error?error.message:"Registration सफल! Email confirmation की जरूरत हो सकती है।";
 }
 
 async function login(){
-const email=$('userEmail').value.trim();
-const password=$('userPassword').value;
-try{
-$('authMessage').textContent='Login हो रहा है...';
+const email=document.getElementById("email").value.trim();
+const password=document.getElementById("password").value;
+
 const {data,error}=await db.auth.signInWithPassword({email,password});
-if(error)throw error;
-await openCustomerDashboard(data.user);
-}catch(e){$('authMessage').textContent='Login Error: '+e.message;}
+
+if(error){
+authMsg.textContent=error.message;
+return;
 }
 
-async function openCustomerDashboard(user){
-$('authBox').classList.add('hidden');
-$('customerDashboard').classList.remove('hidden');
-$('customerWelcome').textContent='Email: '+user.email;
-show('customer');
-await renderCustomerOrders();
+currentUser=data.user;
+openDashboard();
+}
+
+async function openDashboard(){
+if(!currentUser)return;
+
+show("logoutBox");
+
+if(currentUser.email.toLowerCase()===ADMIN_EMAIL.toLowerCase()){
+show("adminBox");
+await loadOrders();
+}else{
+show("customerBox");
+await myOrders();
+}
+}
+
+async function placeOrder(){
+const name=document.getElementById("customerName").value.trim();
+const phone=document.getElementById("phone").value.trim();
+const service=document.getElementById("service").value;
+const qty=Number(document.getElementById("qty").value);
+const delivery=document.getElementById("delivery").value;
+const details=document.getElementById("details").value.trim();
+
+if(!name||!phone||!service||qty<1){
+orderMsg.textContent="सभी जरूरी जानकारी भरें";
+return;
+}
+
+const order={
+order_no:"NPP"+Date.now(),
+user_id:currentUser.id,
+name:name,
+phone:phone,
+service:service,
+qty:qty,
+delivery:delivery,
+details:details,
+status:"नया ऑर्डर"
+};
+
+orderBtn.disabled=true;
+orderMsg.textContent="ऑर्डर सेव हो रहा है...";
+
+const {data,error}=await db.from("orders").insert(order).select();
+
+orderBtn.disabled=false;
+
+if(error){
+orderMsg.textContent="Error: "+error.message;
+return;
+}
+
+orderMsg.textContent="ऑर्डर सफलतापूर्वक सेव हुआ! Order No: "+data[0].order_no;
+
+document.getElementById("service").value="";
+document.getElementById("details").value="";
+document.getElementById("qty").value=1;
+
+myOrders();
+}
+
+async function myOrders(){
+const {data,error}=await db.from("orders")
+.select("*")
+.eq("user_id",currentUser.id)
+.order("created_at",{ascending:false});
+
+if(error){
+myOrderList.textContent=error.message;
+return;
+}
+
+if(!data.length){
+myOrderList.textContent="अभी कोई ऑर्डर नहीं है।";
+return;
+}
+
+myOrderList.innerHTML=data.map(o=>`
+<div class="card">
+<b>Order:</b> ${o.order_no||o.id}<br>
+<b>Service:</b> ${o.service}<br>
+<b>Quantity:</b> ${o.qty}<br>
+<b>Status:</b> ${o.status}
+</div>
+`).join("");
+}
+
+async function loadOrders(){
+const {data,error}=await db.from("orders")
+.select("*")
+.order("created_at",{ascending:false});
+
+if(error){
+adminMsg.textContent="Error: "+error.message;
+return;
+}
+
+totalOrders.textContent="कुल ऑर्डर: "+data.length;
+
+ordersList.innerHTML=data.map(o=>`
+<tr>
+<td>${o.order_no||o.id}</td>
+<td>${o.name||""}</td>
+<td>${o.phone||""}</td>
+<td>${o.service||""}</td>
+<td>${o.qty||""}</td>
+<td>${o.status||""}</td>
+<td>
+<select id="status${o.id}">
+<option ${o.status==="नया ऑर्डर"?"selected":""}>नया ऑर्डर</option>
+<option ${o.status==="स्वीकार किया"?"selected":""}>स्वीकार किया</option>
+<option ${o.status==="काम जारी"?"selected":""}>काम जारी</option>
+<option ${o.status==="पूरा हुआ"?"selected":""}>पूरा हुआ</option>
+<option ${o.status==="रद्द"?"selected":""}>रद्द</option>
+</select>
+<button onclick="updateStatus('${o.id}')">Update</button>
+</td>
+</tr>
+`).join("");
+}
+
+async function updateStatus(id){
+const status=document.getElementById("status"+id).value;
+
+const {error}=await db.from("orders")
+.update({status:status})
+.eq("id",id);
+
+if(error){
+adminMsg.textContent=error.message;
+return;
+}
+
+adminMsg.textContent="Status सफलतापूर्वक Update हुआ!";
+loadOrders();
 }
 
 async function logout(){
 await db.auth.signOut();
-$('customerDashboard').classList.add('hidden');
-$('authBox').classList.remove('hidden');
-$('customerOrders').innerHTML='';
-show('customer');
+currentUser=null;
+show("authBox");
+authMsg.textContent="आप Logout हो गए हैं।";
 }
 
-async function renderCustomerOrders(){
-const {data:{user}}=await db.auth.getUser();
-if(!user)return;
-const {data,error}=await db.from('orders').select('*')
-.eq('user_id',user.id).order('created_at',{ascending:false});
-if(error){$('customerOrders').textContent=error.message;return;}
-$('customerOrders').innerHTML='<h3>आपके ऑर्डर</h3>';
-data.forEach(o=>{
-const div=document.createElement('div');
-div.className='card';
-div.textContent='Order: '+(o.order_number||'-')+' | सेवा: '+(o.service||'-')+' | Status: '+(o.status||'-');
-$('customerOrders').appendChild(div);
-});
-if(!data.length)$('customerOrders').textContent='अभी कोई ऑर्डर नहीं है।';
-}
-
-$('orderForm').addEventListener('submit',async e=>{
-e.preventDefault();
-const {data:{user}}=await db.auth.getUser();
-if(!user){alert('पहले Customer Login कीजिए।');show('customer');return;}
-
-const orderNumber='NPP'+Date.now().toString().slice(-8);
-const name=$('custName').value.trim();
-const order={
-order_number:orderNumber,
-user_id:user.id,
-customer_name:name,
-name:name,
-phone:$('custPhone').value.trim(),
-service:$('serviceSelect').value,
-qty:Number($('qty').value),
-delivery:$('delivery').value,
-details:$('details').value.trim(),
-status:'नया ऑर्डर'
-};
-
-$('orderBtn').disabled=true;
-try{
-const {error}=await db.from('orders').insert(order);
-if(error)throw error;
-$('orderResult').textContent='ऑर्डर सफलतापूर्वक सेव हुआ! Order No: '+orderNumber;
-$('orderForm').reset();
-$('qty').value=1;
-await renderCustomerOrders();
-}catch(e){alert('Order Error: '+e.message);}
-finally{$('orderBtn').disabled=false;}
-});
-
-async function searchOrders(){
-const mobile=$('searchMobile').value.trim();
-const results=$('searchResults');
-if(!/^[0-9]{10}$/.test(mobile)){
-results.textContent='10 अंकों का सही मोबाइल नंबर डालें।';return;
-}
-results.textContent='खोज रहे हैं...';
-try{
-const {data,error}=await db.from('orders').select('*')
-.eq('phone',mobile).order('created_at',{ascending:false});
-if(error)throw error;
-results.innerHTML='';
-if(!data.length){results.textContent='कोई ऑर्डर नहीं मिला।';return;}
-data.forEach(o=>{
-const div=document.createElement('div');
-div.className='card';
-div.textContent='Order: '+(o.order_number||'-')+' | ग्राहक: '+(o.customer_name||o.name||'-')+' | Status: '+(o.status||'-');
-results.appendChild(div);
-});
-}catch(e){results.textContent='Error: '+e.message;}
-}
-
-async function adminLogin(){
-const email=$('adminEmail').value.trim();
-const password=$('adminPass').value;
-try{
-$('adminMsg').textContent='Login हो रहा है...';
-const {error}=await db.auth.signInWithPassword({email,password});
-if(error)throw error;
-const {data:{user}}=await db.auth.getUser();
-if(!user||user.email!==ADMIN_EMAIL){
-await db.auth.signOut();throw new Error('Admin access denied.');
-}
-$('adminLoginBox').classList.add('hidden');
-$('adminDash').classList.remove('hidden');
-await renderAdmin();
-}catch(e){$('adminMsg').textContent='Error: '+e.message;}
-}
-
-async function adminLogout(){
-await db.auth.signOut();
-$('adminDash').classList.add('hidden');
-$('adminLoginBox').classList.remove('hidden');
-$('adminPass').value='';
-show('home');
-}
-
-async function renderAdmin(){
-const {data:{user}}=await db.auth.getUser();
-if(!user||user.email!==ADMIN_EMAIL){$('ordersTable').textContent='Admin login required';return;}
-$('ordersTable').textContent='लोड हो रहा है...';
-const {data,error}=await db.from('orders').select('*').order('created_at',{ascending:false});
-if(error){$('ordersTable').textContent=error.message;return;}
-$('ordersTable').innerHTML='';
-if(!data.length){$('ordersTable').textContent='अभी कोई ऑर्डर नहीं है।';return;}
-data.forEach(o=>{
-const div=document.createElement('div');
-div.className='card';
-const info=document.createElement('p');
-info.textContent='Order: '+(o.order_number||'-')+' | ग्राहक: '+(o.customer_name||o.name||'-')+' | मोबाइल: '+(o.phone||'-')+' | सेवा: '+(o.service||'-')+' | मात्रा: '+(o.qty||'-');
-div.appendChild(info);
-const select=document.createElement('select');
-['नया ऑर्डर','स्वीकार किया','काम जारी','पूरा हुआ','रद्द'].forEach(s=>{
-const op=document.createElement('option');
-op.value=s;op.textContent=s;op.selected=s===o.status;
-select.appendChild(op);
-});
-select.onchange=()=>updateNamanStatus(o.id,select.value);
-div.appendChild(select);
-$('ordersTable').appendChild(div);
-});
-}
-
-async function updateNamanStatus(id,status){
-const {error}=await db.from('orders').update({status}).eq('id',id);
-if(error){alert(error.message);return;}
-alert('Status अपडेट हो गया।');
-await renderAdmin();
-}
-
-async function checkLogin(){
-const {data:{session}}=await db.auth.getSession();
-if(session&&session.user){
-if(session.user.email===ADMIN_EMAIL){
-$('adminLoginBox').classList.add('hidden');
-$('adminDash').classList.remove('hidden');
-show('admin');
-await renderAdmin();
-}else await openCustomerDashboard(session.user);
-}
-}
-
-db.auth.onAuthStateChange((event)=>{
-if(event==='SIGNED_OUT'){
-$('customerDashboard').classList.add('hidden');
-$('authBox').classList.remove('hidden');
+db.auth.getSession().then(({data})=>{
+if(data.session){
+currentUser=data.session.user;
+openDashboard();
+}else{
+show("authBox");
 }
 });
-checkLogin();
-console.log('NAMAN PRINT PORTAL READY');
 </script>
 </body>
 </html>
