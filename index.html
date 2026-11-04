@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -12,7 +13,7 @@ header{background:#12345a;color:white;padding:20px;text-align:center}
 .container{max-width:950px;margin:20px auto;padding:12px}
 .card{background:white;padding:18px;margin-bottom:16px;border-radius:12px;box-shadow:0 3px 12px #0001}
 input,select,textarea{width:100%;padding:12px;margin:7px 0 14px;border:1px solid #ccd5e0;border-radius:7px;font-size:15px}
-button{background:#1769aa;color:white;border:0;padding:12px 18px;border-radius:7px;margin:4px}
+button{background:#1769aa;color:white;border:0;padding:12px 18px;border-radius:7px;margin:4px;cursor:pointer}
 .green{background:#18864b}
 .red{background:#c62828}
 .hidden{display:none}
@@ -24,42 +25,41 @@ th{background:#e8f1fa}
 </style>
 </head>
 <body>
+
 <header>
 <h2>NAMAN PRINT PORTAL</h2>
 <p>Online Printing & Digital Services</p>
 </header>
 
 <div class="container">
+
 <div class="card" id="authBox">
-<h3> NAMAN PRINT PORTAL LOGIN </h3>
+<h3>NAMAN PRINT PORTAL LOGIN</h3>
 
-<button onclick="chooseLogin('customer')">
-Customer Login
-</button>
+<button onclick="chooseLogin('customer')">Customer Login</button>
+<button class="green" onclick="chooseLogin('admin')">Admin Login</button>
 
-<button class="green" onclick="chooseLogin('admin')">
-Admin Login
-</button>
-
-<h3 id="loginTitle">Login / Registration</h3>
+<h3 id="loginTitle">Customer Login</h3>
 
 <input id="email" type="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
 
 <button onclick="login()">Login</button>
-
-<button class="green" onclick="register()">New Registration</button>
+<button class="green" id="registerBtn" onclick="register()">New Registration</button>
 
 <p id="authMsg" class="msg"></p>
 </div>
+
 <div id="customerBox" class="hidden">
-<button onclick="logout()" style="background:red;color:white;padding:10px;border:0;border-radius:5px;">
-Logout
-</button>
-  <div class="card">
+
+<button class="red" onclick="logout()">Logout</button>
+
+<div class="card">
 <h3>नया ऑर्डर बुक करें</h3>
+
 <input id="customerName" placeholder="ग्राहक का नाम">
 <input id="mobile" placeholder="मोबाइल नंबर" type="tel">
+
 <select id="service">
 <option value="">Service चुनें</option>
 <option>PAN Card</option>
@@ -70,15 +70,20 @@ Logout
 <option>Online Form</option>
 <option>Other</option>
 </select>
+
 <input id="qty" type="number" min="1" value="1">
+
 <select id="delivery">
 <option>Normal</option>
 <option>Urgent</option>
 </select>
+
 <textarea id="details" placeholder="अन्य जानकारी"></textarea>
+
 <button class="green" onclick="placeOrder()" id="orderBtn">ऑर्डर बुक करें</button>
 <p id="orderMsg" class="msg"></p>
 </div>
+
 <div class="card">
 <h3>मेरे ऑर्डर</h3>
 <button onclick="myOrders()">Refresh Orders</button>
@@ -87,77 +92,141 @@ Logout
 </div>
 
 <div id="adminBox" class="hidden">
-<button onclick="logout()" style="background:red;color:white;padding:10px;border:0;border-radius:5px;">
-Logout
-</button>
-  <div class="card">
+
+<button class="red" onclick="logout()">Logout</button>
+
+<div class="card">
 <h3>Admin Dashboard</h3>
-  <input id="searchOrder"
+
+<input id="searchOrder"
 placeholder="मोबाइल नंबर या Order Number से Search करें"
 oninput="searchOrders()">
 
 <h3>ऑर्डर रिपोर्ट</h3>
 <p id="pendingCount">Pending: 0</p>
 <p id="completeCount">Completed: 0</p>
+
 <h2 id="totalOrders">कुल ऑर्डर: 0</h2>
+
 <button onclick="loadOrders()">Refresh Orders</button>
+
 <div class="tablewrap">
 <table>
-<thead><tr>
-<th>Order No.</th><th>Customer</th><th>Mobile</th>
-<th>Service</th><th>Qty</th><th>Status</th><th>Update</th>
-</tr></thead>
+<thead>
+<tr>
+<th>Order No.</th>
+<th>Customer</th>
+<th>Mobile</th>
+<th>Service</th>
+<th>Qty</th>
+<th>Status</th>
+<th>Update</th>
+</tr>
+</thead>
 <tbody id="ordersList"></tbody>
 </table>
 </div>
+
 <p id="adminMsg" class="msg"></p>
 </div>
 </div>
 
-<div class="card hidden" id="logoutBox">
-<button class="red" onclick="logout()">Logout</button>
-</div>
 </div>
 
 <script>
 const SUPABASE_URL="https://nkcqfrfbxjdklprtbmwb.supabase.co";
 const SUPABASE_KEY="sb_publishable_sNCyxl8c_knUdRd5Zg6UkQ_QFkKwPom";
+
 const db=supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const ADMIN_EMAIL="omveersinghyadav162@gmail.com";
-let currentUser=null;
 
-function el(id){return document.getElementById(id)}
+let currentUser=null;
+let selectedLoginType="customer";
+
+function el(id){
+return document.getElementById(id);
+}
+
 function show(id){
-["authBox","customerBox","adminBox","logoutBox"].forEach(x=>el(x).classList.add("hidden"));
+["authBox","customerBox","adminBox"].forEach(x=>{
+el(x).classList.add("hidden");
+});
 el(id).classList.remove("hidden");
 }
-async function register(){
-let email=el("email").value.trim(),password=el("password").value;
-if(!email||password.length<6){el("authMsg").textContent="Email और कम से कम 6 अक्षर का Password डालें";return}
-let {error}=await db.auth.signUp({email,password});
-el("authMsg").textContent=error?error.message:"Registration सफल!";
-}
+
 function chooseLogin(type){
-  if(type==="customer"){
-    el("loginTitle").textContent="Customer Login";
-    el("authMsg").textContent="ग्राहक अपनी Email और Password डालें।";
-  }else{
-    el("loginTitle").textContent="Admin Login";
-    el("authMsg").textContent="Admin अपनी Email और Password डालें।";
-  }
+selectedLoginType=type;
+
+if(type==="customer"){
+el("loginTitle").textContent="Customer Login";
+el("authMsg").textContent="ग्राहक अपनी Email और Password डालें।";
+el("registerBtn").classList.remove("hidden");
+}else{
+el("loginTitle").textContent="Admin Login";
+el("authMsg").textContent="Admin अपनी Email और Password डालें।";
+el("registerBtn").classList.add("hidden");
 }
-  async function login(){
+}
+
+async function register(){
+if(selectedLoginType!=="customer"){
+el("authMsg").textContent="Registration केवल Customer के लिए है।";
+return;
+}
+
+let email=el("email").value.trim();
+let password=el("password").value;
+
+if(!email||password.length<6){
+el("authMsg").textContent="Email और कम से कम 6 अक्षर का Password डालें";
+return;
+}
+
+let {error}=await db.auth.signUp({email,password});
+
+el("authMsg").textContent=error
+?error.message
+:"Registration सफल! Email confirmation की जरूरत हो सकती है।";
+}
+
+async function login(){
+let email=el("email").value.trim();
+let password=el("password").value;
+
+if(!email||!password){
+el("authMsg").textContent="Email और Password भरें।";
+return;
+}
+
+let isAdmin=email.toLowerCase()===ADMIN_EMAIL.toLowerCase();
+
+if(selectedLoginType==="admin"&&!isAdmin){
+el("authMsg").textContent="यह Admin Email नहीं है।";
+return;
+}
+
+if(selectedLoginType==="customer"&&isAdmin){
+el("authMsg").textContent="Admin Login बटन से Login करें।";
+return;
+}
+
 let {data,error}=await db.auth.signInWithPassword({
-email:el("email").value.trim(),
-password:el("password").value
+email:email,
+password:password
 });
-if(error){el("authMsg").textContent=error.message;return}
+
+if(error){
+el("authMsg").textContent=error.message;
+return;
+}
+
 currentUser=data.user;
 await dashboard();
 }
+
 async function dashboard(){
 if(!currentUser)return;
-el("logoutBox").classList.remove("hidden");
+
 if(currentUser.email.toLowerCase()===ADMIN_EMAIL.toLowerCase()){
 show("adminBox");
 await loadOrders();
@@ -166,15 +235,20 @@ show("customerBox");
 await myOrders();
 }
 }
+
 async function placeOrder(){
 let name=el("customerName").value.trim();
 let mobile=el("mobile").value.trim();
 let service=el("service").value;
 let qty=Number(el("qty").value);
+
 if(!name||!mobile||!service||qty<1){
-el("orderMsg").textContent="सभी जरूरी जानकारी भरें";return;
+el("orderMsg").textContent="सभी जरूरी जानकारी भरें";
+return;
 }
+
 let number="NPP"+Date.now();
+
 let order={
 order_number:number,
 customer_name:name,
@@ -190,23 +264,47 @@ details:el("details").value.trim(),
 services:service,
 status:"नया ऑर्डर"
 };
+
 el("orderBtn").disabled=true;
-let {data,error}=await db.from("orders").insert(order).select();
+
+let {error}=await db.from("orders").insert(order);
+
 el("orderBtn").disabled=false;
-if(error){el("orderMsg").textContent="Error: "+error.message;return}
+
+if(error){
+el("orderMsg").textContent="Error: "+error.message;
+return;
+}
+
 el("orderMsg").textContent="ऑर्डर सफल! Order No: "+number;
+
 el("customerName").value="";
 el("mobile").value="";
 el("service").value="";
 el("qty").value=1;
 el("details").value="";
+
 await myOrders();
 }
+
 async function myOrders(){
-let {data,error}=await db.from("orders").select("*")
-.eq("user_id",currentUser.id).order("created_at",{ascending:false});
-if(error){el("myOrderList").textContent=error.message;return}
-if(!data.length){el("myOrderList").textContent="अभी कोई ऑर्डर नहीं है";return}
+if(!currentUser)return;
+
+let {data,error}=await db.from("orders")
+.select("*")
+.eq("user_id",currentUser.id)
+.order("created_at",{ascending:false});
+
+if(error){
+el("myOrderList").textContent=error.message;
+return;
+}
+
+if(!data.length){
+el("myOrderList").textContent="अभी कोई ऑर्डर नहीं है";
+return;
+}
+
 el("myOrderList").innerHTML=data.map(o=>`
 <div class="card">
 <b>Order:</b> ${safe(o.order_number||o.order_no)}<br>
@@ -214,33 +312,49 @@ el("myOrderList").innerHTML=data.map(o=>`
 <b>Service:</b> ${safe(o.service_name||o.services)}<br>
 <b>Qty:</b> ${o.qty||""}<br>
 <b>Status:</b> ${safe(o.status)}
-</div>`).join("");
+</div>
+`).join("");
 }
+
 function safe(value){
-return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+return String(value??"").replace(/[&<>"']/g,c=>({
+"&":"&amp;",
+"<":"&lt;",
+">":"&gt;",
+'"':"&quot;",
+"'":"&#39;"
+}[c]));
 }
-  function searchOrders(){
-  const q=document.getElementById("searchOrder").value
-    .trim().toLowerCase();
 
-  const rows=document.querySelectorAll("#ordersList tr");
+function searchOrders(){
+const q=el("searchOrder").value.trim().toLowerCase();
 
-  rows.forEach(row=>{
-    row.style.display=row.innerText.toLowerCase().includes(q)
-      ? ""
-      : "none";
-  });
+const rows=document.querySelectorAll("#ordersList tr");
+
+rows.forEach(row=>{
+row.style.display=row.innerText.toLowerCase().includes(q)?"":"none";
+});
 }
+
 async function loadOrders(){
-let {data,error}=await db.from("orders").select("*").order("created_at",{ascending:false});
-if(error){el("adminMsg").textContent=error.message;return}
+let {data,error}=await db.from("orders")
+.select("*")
+.order("created_at",{ascending:false});
+
+if(error){
+el("adminMsg").textContent=error.message;
+return;
+}
+
 el("totalOrders").textContent="कुल ऑर्डर: "+data.length;
+
 el("pendingCount").textContent="Pending: "+
-data.filter(o=>o.status!=="पूरा हुआ" && o.status!=="रद्द").length;
+data.filter(o=>o.status!=="पूरा हुआ"&&o.status!=="रद्द").length;
 
 el("completeCount").textContent="Completed: "+
 data.filter(o=>o.status==="पूरा हुआ").length;
-  el("ordersList").innerHTML=data.map(o=>`
+
+el("ordersList").innerHTML=data.map(o=>`
 <tr>
 <td>${safe(o.order_number||o.order_no)}</td>
 <td>${safe(o.customer_name||o.name)}</td>
@@ -250,83 +364,112 @@ data.filter(o=>o.status==="पूरा हुआ").length;
 <td>${safe(o.status)}</td>
 <td>
 <select id="status${o.id}">
-${["नया ऑर्डर","स्वीकार किया","काम जारी","पूरा हुआ","रद्द"].map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}
+${["नया ऑर्डर","स्वीकार किया","काम जारी","पूरा हुआ","रद्द"]
+.map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}
 </select>
 <button onclick="updateStatus(${Number(o.id)})">Update</button>
 <button onclick="printReceipt(${Number(o.id)})">Print Receipt</button>
 </td>
-</tr>`).join("");
+</tr>
+`).join("");
+
+searchOrders();
 }
+
 async function printReceipt(id){
-  const {data,error}=await db.from("orders")
-    .select("*")
-    .eq("id",id)
-    .single();
+const {data,error}=await db.from("orders")
+.select("*")
+.eq("id",id)
+.single();
 
-  if(error){
-    alert("Receipt Error: "+error.message);
-    return;
-  }
-
-  const receipt=window.open("","_blank");
-
-  if(!receipt){
-    alert("Browser में Pop-ups Allow करें");
-    return;
-  }
-
-  receipt.document.write(`
-  <html>
-  <head>
-  <title>NAMAN PRINT RECEIPT</title>
-  <style>
-  body{font-family:Arial;padding:25px}
-  .box{border:2px solid #12345a;padding:20px;max-width:500px;margin:auto}
-  h2{text-align:center;color:#12345a}
-  hr{border:1px dashed #999}
-  p{font-size:16px}
-  </style>
-  </head>
-  <body>
-  <div class="box">
-  <h2>NAMAN PRINT PORTAL</h2>
-  <h3 style="text-align:center">ORDER RECEIPT</h3>
-  <hr>
-  <p><b>Order No:</b> ${safe(data.order_number||data.order_no)}</p>
-  <p><b>Customer:</b> ${safe(data.customer_name||data.name)}</p>
-  <p><b>Mobile:</b> ${safe(data.mobile||data.phone)}</p>
-  <p><b>Service:</b> ${safe(data.service_name||data.services)}</p>
-  <p><b>Quantity:</b> ${data.qty||1}</p>
-  <p><b>Delivery:</b> ${safe(data.delivery)}</p>
-  <p><b>Status:</b> ${safe(data.status)}</p>
-  <p><b>Details:</b> ${safe(data.details)}</p>
-  <hr>
-  <p style="text-align:center">Thank You!</p>
-  </div>
-  <script>window.onload=function(){window.print()}<\/script>
-  </body>
-  </html>
-  `);
-
-  receipt.document.close();
+if(error){
+alert("Receipt Error: "+error.message);
+return;
 }
+
+const receipt=window.open("","_blank");
+
+if(!receipt){
+alert("Browser में Pop-ups Allow करें");
+return;
+}
+
+receipt.document.write(`
+<html>
+<head>
+<title>NAMAN PRINT RECEIPT</title>
+<style>
+body{font-family:Arial;padding:25px}
+.box{border:2px solid #12345a;padding:20px;max-width:500px;margin:auto}
+h2{text-align:center;color:#12345a}
+hr{border:1px dashed #999}
+p{font-size:16px}
+</style>
+</head>
+<body>
+<div class="box">
+<h2>NAMAN PRINT PORTAL</h2>
+<h3 style="text-align:center">ORDER RECEIPT</h3>
+<hr>
+<p><b>Order No:</b> ${safe(data.order_number||data.order_no)}</p>
+<p><b>Customer:</b> ${safe(data.customer_name||data.name)}</p>
+<p><b>Mobile:</b> ${safe(data.mobile||data.phone)}</p>
+<p><b>Service:</b> ${safe(data.service_name||data.services)}</p>
+<p><b>Quantity:</b> ${data.qty||1}</p>
+<p><b>Delivery:</b> ${safe(data.delivery)}</p>
+<p><b>Status:</b> ${safe(data.status)}</p>
+<p><b>Details:</b> ${safe(data.details)}</p>
+<hr>
+<p style="text-align:center">Thank You!</p>
+</div>
+<script>window.onload=function(){window.print()}<\/script>
+</body>
+</html>
+`);
+
+receipt.document.close();
+}
+
 async function updateStatus(id){
 let status=el("status"+id).value;
-let {error}=await db.from("orders").update({status}).eq("id",id);
-if(error){el("adminMsg").textContent=error.message;return}
+
+let {error}=await db.from("orders")
+.update({status})
+.eq("id",id);
+
+if(error){
+el("adminMsg").textContent=error.message;
+return;
+}
+
 el("adminMsg").textContent="Status Update हो गया!";
 await loadOrders();
 }
+
 async function logout(){
 await db.auth.signOut();
 currentUser=null;
 show("authBox");
+chooseLogin("customer");
+el("email").value="";
+el("password").value="";
 el("authMsg").textContent="Logout सफल!";
 }
-db.auth.getSession().then(({data})=>{
-if(data.session){currentUser=data.session.user;dashboard()}
-else show("authBox");
+
+db.auth.getSession().then(({data,error})=>{
+if(error){
+show("authBox");
+return;
+}
+
+if(data.session){
+currentUser=data.session.user;
+dashboard();
+}else{
+show("authBox");
+}
 });
 </script>
+
 </body>
 </html>
