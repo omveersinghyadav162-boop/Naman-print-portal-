@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -74,6 +73,13 @@ th{background:#e8f1fa}
 <div id="adminBox" class="hidden">
 <div class="card">
 <h3>Admin Dashboard</h3>
+  <input id="searchOrder"
+placeholder="मोबाइल नंबर या Order Number से Search करें"
+oninput="searchOrders()">
+
+<h3>ऑर्डर रिपोर्ट</h3>
+<p id="pendingCount">Pending: 0</p>
+<p id="completeCount">Completed: 0</p>
 <h2 id="totalOrders">कुल ऑर्डर: 0</h2>
 <button onclick="loadOrders()">Refresh Orders</button>
 <div class="tablewrap">
@@ -185,11 +191,28 @@ el("myOrderList").innerHTML=data.map(o=>`
 function safe(value){
 return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 }
+  function searchOrders(){
+  const q=document.getElementById("searchOrder").value
+    .trim().toLowerCase();
+
+  const rows=document.querySelectorAll("#ordersList tr");
+
+  rows.forEach(row=>{
+    row.style.display=row.innerText.toLowerCase().includes(q)
+      ? ""
+      : "none";
+  });
+}
 async function loadOrders(){
 let {data,error}=await db.from("orders").select("*").order("created_at",{ascending:false});
 if(error){el("adminMsg").textContent=error.message;return}
 el("totalOrders").textContent="कुल ऑर्डर: "+data.length;
-el("ordersList").innerHTML=data.map(o=>`
+el("pendingCount").textContent="Pending: "+
+data.filter(o=>o.status!=="पूरा हुआ" && o.status!=="रद्द").length;
+
+el("completeCount").textContent="Completed: "+
+data.filter(o=>o.status==="पूरा हुआ").length;
+  el("ordersList").innerHTML=data.map(o=>`
 <tr>
 <td>${safe(o.order_number||o.order_no)}</td>
 <td>${safe(o.customer_name||o.name)}</td>
