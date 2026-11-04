@@ -38,9 +38,11 @@ th{background:#e8f1fa}
 <button class="green" onclick="register()">New Registration</button>
 <p id="authMsg" class="msg"></p>
 </div>
-
 <div id="customerBox" class="hidden">
-<div class="card">
+<button onclick="logout()" style="background:red;color:white;padding:10px;border:0;border-radius:5px;">
+Logout
+</button>
+  <div class="card">
 <h3>नया ऑर्डर बुक करें</h3>
 <input id="customerName" placeholder="ग्राहक का नाम">
 <input id="mobile" placeholder="मोबाइल नंबर" type="tel">
