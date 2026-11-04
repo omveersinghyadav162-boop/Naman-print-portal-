@@ -48,7 +48,13 @@ footer{text-align:center;padding:25px;color:#66758a}
 <button onclick="show('order')">ऑर्डर करें</button>
 </div>
 <div class="panel">
-<h3>संपर्क सहायता</h3>
+<h3>संपर्क सहायता</h3><input
+ id="searchMobile"
+ type="tel"
+ maxlength="10"
+ placeholder="मोबाइल नंबर से ऑर्डर खोजें"
+ oninput="searchOrders()"
+>
 <p>मोबाइल: 9720054993</p>
 <a href="https://wa.me/919720054993">WhatsApp पर संपर्क करें</a>
 </div>
@@ -180,7 +186,58 @@ $('serviceSelect').value=s;
 show('order');
 }
 
-async function register(){
+async function register(){async function searchOrders(){
+
+ const mobile = $('searchMobile').value.trim();
+
+ const list = $('ordersList');
+
+ if(!mobile){
+  await loadOrders();
+  return;
+ }
+
+ list.innerHTML = 'खोज रहे हैं...';
+
+ try{
+
+  const {data,error} = await db
+   .from('orders')
+   .select('*')
+   .or(`mobile.eq.${mobile},phone.eq.${mobile}`)
+   .order('created_at',{ascending:false});
+
+  if(error) throw error;
+
+  if(!data.length){
+   list.textContent = 'इस मोबाइल नंबर से कोई ऑर्डर नहीं मिला।';
+   return;
+  }
+
+  list.innerHTML = '';
+
+  data.forEach(order=>{
+
+   const div = document.createElement('div');
+   div.className = 'order';
+
+   div.textContent =
+    'Order No: ' + (order.order_no || order.order_number || '-') +
+    ' | ग्राहक: ' + (order.customer_name || order.name || '-') +
+    ' | मोबाइल: ' + (order.mobile || order.phone || '-') +
+    ' | Status: ' + (order.status || '-');
+
+   list.appendChild(div);
+
+  });
+
+ }catch(error){
+
+  list.textContent = 'Error: ' + error.message;
+
+ }
+
+}
 const email=$('userEmail').value.trim();
 const password=$('userPassword').value;
 if(!email||password.length<6){
