@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
@@ -9,9 +10,9 @@
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:#172538}
 header{background:linear-gradient(120deg,#102c4d,#1769aa);color:white;padding:20px}
-.brand{font-size:23px;font-weight:bold}
+.brand{font-size:24px;font-weight:bold}
 nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
-button{background:var(--blue);color:white;border:0;border-radius:8px;padding:11px 15px;cursor:pointer;font-weight:bold;margin:3px}
+button{background:#1769aa;color:white;border:0;border-radius:8px;padding:11px 15px;cursor:pointer;font-weight:bold;margin:3px}
 nav button{background:#ffffff25}
 main{max-width:1000px;margin:22px auto;padding:0 15px}
 .panel,.card{background:white;padding:18px;border-radius:14px;margin:15px 0;border:1px solid #e2e8f0}
@@ -22,10 +23,10 @@ label{font-weight:bold;font-size:14px}
 .notice{background:#fff7e6;padding:13px;border-radius:9px;margin:12px 0}
 .actions{display:flex;gap:9px;flex-wrap:wrap}
 footer{text-align:center;padding:25px;color:#66758a}
+.status{padding:8px;background:#eaf2ff;border-radius:7px;display:inline-block}
 </style>
 </head>
 <body>
-
 <header>
 <div class="brand">🖨️ NAMAN PRINT PORTAL</div>
 <p>Digital Services • Online Forms • Printing</p>
@@ -37,9 +38,7 @@ footer{text-align:center;padding:25px;color:#66758a}
 <button onclick="show('admin')">Admin Login</button>
 </nav>
 </header>
-
 <main>
-
 <section id="home">
 <div class="panel">
 <h2>आपका डिजिटल सेवा केंद्र</h2>
@@ -48,13 +47,10 @@ footer{text-align:center;padding:25px;color:#66758a}
 <button onclick="show('order')">ऑर्डर करें</button>
 </div>
 <div class="panel">
-<h3>संपर्क सहायता</h3><input
- id="searchMobile"
- type="tel"
- maxlength="10"
- placeholder="मोबाइल नंबर से ऑर्डर खोजें"
- oninput="searchOrders()"
->
+<h3>मोबाइल नंबर से ऑर्डर खोजें</h3>
+<input id="searchMobile" type="tel" maxlength="10" placeholder="10 अंकों का मोबाइल नंबर">
+<button onclick="searchOrders()">ऑर्डर खोजें</button>
+<div id="searchResults"></div>
 <p>मोबाइल: 9720054993</p>
 <a href="https://wa.me/919720054993">WhatsApp पर संपर्क करें</a>
 </div>
@@ -73,13 +69,10 @@ footer{text-align:center;padding:25px;color:#66758a}
 <input id="userEmail" type="email" placeholder="अपना Email डालें">
 <label>Password</label>
 <input id="userPassword" type="password" placeholder="कम से कम 6 अक्षर">
-<div class="actions">
 <button onclick="register()">Register</button>
 <button onclick="login()">Login</button>
-</div>
 <p id="authMessage"></p>
 </div>
-
 <div class="panel hidden" id="customerDashboard">
 <h3>स्वागत है!</h3>
 <p id="customerWelcome"></p>
@@ -92,7 +85,7 @@ footer{text-align:center;padding:25px;color:#66758a}
 
 <section id="order" class="hidden">
 <h2>नया ऑर्डर</h2>
-<div class="notice">ऑर्डर देने के लिए Customer Login जरूरी है। Aadhaar नंबर या OTP यहाँ न डालें।</div>
+<div class="notice">ऑर्डर के लिए Customer Login जरूरी है। Aadhaar नंबर या OTP यहाँ न डालें।</div>
 <div class="panel">
 <form id="orderForm">
 <label>आपका नाम</label>
@@ -136,7 +129,7 @@ footer{text-align:center;padding:25px;color:#66758a}
 <label>Admin Email</label>
 <input id="adminEmail" type="email" value="omveersinghyadav162@gmail.com">
 <label>Password</label>
-<input id="adminPass" type="password">
+<input id="adminPass" type="password" placeholder="Admin Password">
 <button onclick="adminLogin()">Admin Login</button>
 <p id="adminMsg"></p>
 </div>
@@ -147,16 +140,17 @@ footer{text-align:center;padding:25px;color:#66758a}
 <div id="ordersTable"></div>
 </div>
 </section>
-
 </main>
 
-<footer>© 2026 NAMAN PRINT PORTAL<br>Contact: 9720054993</footer>
+<footer>
+© 2026 NAMAN PRINT PORTAL<br>
+Contact: 9720054993
+</footer>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL='https://nkcqfrfbxjdklprtbmwb.supabase.co';
 const SUPABASE_KEY='sb_publishable_sNCyxl8c_knUdRd5Zg6UkQ_QFkKwPom';
-
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
 const $=id=>document.getElementById(id);
 const ADMIN_EMAIL='omveersinghyadav162@gmail.com';
@@ -185,59 +179,7 @@ function selectService(s){
 $('serviceSelect').value=s;
 show('order');
 }
-
-async function register(){async function searchOrders(){
-
- const mobile = $('searchMobile').value.trim();
-
- const list = $('ordersList');
-
- if(!mobile){
-  await loadOrders();
-  return;
- }
-
- list.innerHTML = 'खोज रहे हैं...';
-
- try{
-
-  const {data,error} = await db
-   .from('orders')
-   .select('*')
-   .or(`mobile.eq.${mobile},phone.eq.${mobile}`)
-   .order('created_at',{ascending:false});
-
-  if(error) throw error;
-
-  if(!data.length){
-   list.textContent = 'इस मोबाइल नंबर से कोई ऑर्डर नहीं मिला।';
-   return;
-  }
-
-  list.innerHTML = '';
-
-  data.forEach(order=>{
-
-   const div = document.createElement('div');
-   div.className = 'order';
-
-   div.textContent =
-    'Order No: ' + (order.order_no || order.order_number || '-') +
-    ' | ग्राहक: ' + (order.customer_name || order.name || '-') +
-    ' | मोबाइल: ' + (order.mobile || order.phone || '-') +
-    ' | Status: ' + (order.status || '-');
-
-   list.appendChild(div);
-
-  });
-
- }catch(error){
-
-  list.textContent = 'Error: ' + error.message;
-
- }
-
-}
+async function register(){
 const email=$('userEmail').value.trim();
 const password=$('userPassword').value;
 if(!email||password.length<6){
@@ -248,31 +190,20 @@ $('authMessage').textContent='Registration हो रहा है...';
 try{
 const {data,error}=await db.auth.signUp({email,password});
 if(error)throw error;
-if(data.session){
-await openCustomerDashboard(data.user);
-}else{
-$('authMessage').textContent='Registration सफल! Email confirmation करके फिर Login करें।';
-}
-}catch(e){
-$('authMessage').textContent='Error: '+e.message;
-}
+if(data.session)await openCustomerDashboard(data.user);
+else $('authMessage').textContent='Registration सफल! Email confirmation करके Login करें।';
+}catch(e){$('authMessage').textContent='Error: '+e.message;}
 }
 
 async function login(){
 const email=$('userEmail').value.trim();
 const password=$('userPassword').value;
-if(!email||!password){
-$('authMessage').textContent='Email और Password भरें।';
-return;
-}
-$('authMessage').textContent='Login हो रहा है...';
 try{
+$('authMessage').textContent='Login हो रहा है...';
 const {data,error}=await db.auth.signInWithPassword({email,password});
 if(error)throw error;
 await openCustomerDashboard(data.user);
-}catch(e){
-$('authMessage').textContent='Login Error: '+e.message;
-}
+}catch(e){$('authMessage').textContent='Login Error: '+e.message;}
 }
 
 async function openCustomerDashboard(user){
@@ -284,57 +215,41 @@ await renderCustomerOrders();
 }
 
 async function logout(){
-const {error}=await db.auth.signOut();
-if(error){
-$('authMessage').textContent=error.message;
-return;
-}
+await db.auth.signOut();
 $('customerDashboard').classList.add('hidden');
 $('authBox').classList.remove('hidden');
 $('customerOrders').innerHTML='';
-$('authMessage').textContent='Logout सफल हुआ।';
 show('customer');
 }
 
 async function renderCustomerOrders(){
-const {data:{user},error:userError}=await db.auth.getUser();
-if(userError||!user)return;
-
-const {data,error}=await db.from('orders')
-.select('order_number,service,status,created_at')
-.eq('user_id',user.id)
-.order('created_at',{ascending:false});
-
-if(error){
-$('customerOrders').textContent='Orders Error: '+error.message;
-return;
-}
-$('customerOrders').innerHTML='<h3>आपके ऑर्डर</h3>'+
-(data.length?data.map(o=>`
-<div class="card">
-<b>ऑर्डर नंबर: ${o.order_number}</b><br>
-सेवा: ${o.service}<br>
-Status: ${o.status}
-</div>`).join(''):'<p>अभी कोई ऑर्डर नहीं है।</p>');
+const {data:{user}}=await db.auth.getUser();
+if(!user)return;
+const {data,error}=await db.from('orders').select('*')
+.eq('user_id',user.id).order('created_at',{ascending:false});
+if(error){$('customerOrders').textContent=error.message;return;}
+$('customerOrders').innerHTML='<h3>आपके ऑर्डर</h3>';
+data.forEach(o=>{
+const div=document.createElement('div');
+div.className='card';
+div.textContent='Order: '+(o.order_number||'-')+' | सेवा: '+(o.service||'-')+' | Status: '+(o.status||'-');
+$('customerOrders').appendChild(div);
+});
+if(!data.length)$('customerOrders').textContent='अभी कोई ऑर्डर नहीं है।';
 }
 
-$('orderForm').addEventListener('submit',async function(e){
+$('orderForm').addEventListener('submit',async e=>{
 e.preventDefault();
+const {data:{user}}=await db.auth.getUser();
+if(!user){alert('पहले Customer Login कीजिए।');show('customer');return;}
 
-const {data:{user},error:userError}=await db.auth.getUser();
-if(userError||!user){
-alert('पहले Customer Login कीजिए।');
-show('customer');
-return;
-}
-
-const customerName=$('custName').value.trim();
-
+const orderNumber='NPP'+Date.now().toString().slice(-8);
+const name=$('custName').value.trim();
 const order={
-order_number:'NPP'+Date.now().toString().slice(-8),
+order_number:orderNumber,
 user_id:user.id,
-customer_name:customerName,
-name:customerName,
+customer_name:name,
+name:name,
 phone:$('custPhone').value.trim(),
 service:$('serviceSelect').value,
 qty:Number($('qty').value),
@@ -344,53 +259,54 @@ status:'नया ऑर्डर'
 };
 
 $('orderBtn').disabled=true;
-$('orderBtn').textContent='सेव हो रहा है...';
-
 try{
 const {error}=await db.from('orders').insert(order);
 if(error)throw error;
-
-$('orderResult').innerHTML=`
-<div class="notice">
-ऑर्डर सफलतापूर्वक सेव हुआ!<br>
-ऑर्डर नंबर: <b>${order.order_number}</b>
-</div>`;
-
+$('orderResult').textContent='ऑर्डर सफलतापूर्वक सेव हुआ! Order No: '+orderNumber;
 $('orderForm').reset();
 $('qty').value=1;
 await renderCustomerOrders();
-
-}catch(e){
-alert('Order Error: '+e.message);
-}finally{
-$('orderBtn').disabled=false;
-$('orderBtn').textContent='ऑर्डर भेजें';
-}
+}catch(e){alert('Order Error: '+e.message);}
+finally{$('orderBtn').disabled=false;}
 });
+
+async function searchOrders(){
+const mobile=$('searchMobile').value.trim();
+const results=$('searchResults');
+if(!/^[0-9]{10}$/.test(mobile)){
+results.textContent='10 अंकों का सही मोबाइल नंबर डालें।';return;
+}
+results.textContent='खोज रहे हैं...';
+try{
+const {data,error}=await db.from('orders').select('*')
+.eq('phone',mobile).order('created_at',{ascending:false});
+if(error)throw error;
+results.innerHTML='';
+if(!data.length){results.textContent='कोई ऑर्डर नहीं मिला।';return;}
+data.forEach(o=>{
+const div=document.createElement('div');
+div.className='card';
+div.textContent='Order: '+(o.order_number||'-')+' | ग्राहक: '+(o.customer_name||o.name||'-')+' | Status: '+(o.status||'-');
+results.appendChild(div);
+});
+}catch(e){results.textContent='Error: '+e.message;}
+}
 
 async function adminLogin(){
 const email=$('adminEmail').value.trim();
 const password=$('adminPass').value;
-$('adminMsg').textContent='Admin Login हो रहा है...';
-
 try{
+$('adminMsg').textContent='Login हो रहा है...';
 const {error}=await db.auth.signInWithPassword({email,password});
 if(error)throw error;
-
 const {data:{user}}=await db.auth.getUser();
 if(!user||user.email!==ADMIN_EMAIL){
-await db.auth.signOut();
-throw new Error('Admin access denied.');
+await db.auth.signOut();throw new Error('Admin access denied.');
 }
-
 $('adminLoginBox').classList.add('hidden');
 $('adminDash').classList.remove('hidden');
-$('adminMsg').textContent='Admin Login सफल!';
 await renderAdmin();
-
-}catch(e){
-$('adminMsg').textContent='Error: '+e.message;
-}
+}catch(e){$('adminMsg').textContent='Error: '+e.message;}
 }
 
 async function adminLogout(){
@@ -398,59 +314,38 @@ await db.auth.signOut();
 $('adminDash').classList.add('hidden');
 $('adminLoginBox').classList.remove('hidden');
 $('adminPass').value='';
-$('adminMsg').textContent='Logout सफल हुआ।';
 show('home');
 }
 
 async function renderAdmin(){
 const {data:{user}}=await db.auth.getUser();
-if(!user||user.email!==ADMIN_EMAIL){
-$('ordersTable').textContent='Admin login required.';
-return;
-}
-
-$('ordersTable').textContent='Orders लोड हो रहे हैं...';
-
-const {data,error}=await db.from('orders')
-.select('*')
-.order('created_at',{ascending:false});
-
-if(error){
-$('ordersTable').textContent='Error: '+error.message;
-return;
-}
-
-if(!data.length){
-$('ordersTable').textContent='अभी कोई ऑर्डर नहीं है।';
-return;
-}
-
-$('ordersTable').innerHTML=data.map(o=>`
-<div class="card">
-<b>${o.order_number}</b><br>
-ग्राहक: ${o.customer_name || o.name}<br>
-मोबाइल: ${o.phone}<br>
-सेवा: ${o.service}<br>
-मात्रा: ${o.qty}<br>
-विवरण: ${o.details||''}<br>
-Status: ${o.status}
-<select onchange="updateNamanStatus('${o.id}',this.value)">
-<option ${o.status==='नया ऑर्डर'?'selected':''}>नया ऑर्डर</option>
-<option ${o.status==='स्वीकार किया'?'selected':''}>स्वीकार किया</option>
-<option ${o.status==='काम जारी'?'selected':''}>काम जारी</option>
-<option ${o.status==='पूरा हुआ'?'selected':''}>पूरा हुआ</option>
-<option ${o.status==='रद्द'?'selected':''}>रद्द</option>
-</select>
-</div>`).join('');
+if(!user||user.email!==ADMIN_EMAIL){$('ordersTable').textContent='Admin login required';return;}
+$('ordersTable').textContent='लोड हो रहा है...';
+const {data,error}=await db.from('orders').select('*').order('created_at',{ascending:false});
+if(error){$('ordersTable').textContent=error.message;return;}
+$('ordersTable').innerHTML='';
+if(!data.length){$('ordersTable').textContent='अभी कोई ऑर्डर नहीं है।';return;}
+data.forEach(o=>{
+const div=document.createElement('div');
+div.className='card';
+const info=document.createElement('p');
+info.textContent='Order: '+(o.order_number||'-')+' | ग्राहक: '+(o.customer_name||o.name||'-')+' | मोबाइल: '+(o.phone||'-')+' | सेवा: '+(o.service||'-')+' | मात्रा: '+(o.qty||'-');
+div.appendChild(info);
+const select=document.createElement('select');
+['नया ऑर्डर','स्वीकार किया','काम जारी','पूरा हुआ','रद्द'].forEach(s=>{
+const op=document.createElement('option');
+op.value=s;op.textContent=s;op.selected=s===o.status;
+select.appendChild(op);
+});
+select.onchange=()=>updateNamanStatus(o.id,select.value);
+div.appendChild(select);
+$('ordersTable').appendChild(div);
+});
 }
 
 async function updateNamanStatus(id,status){
-const {error}=await db.from('orders')
-.update({status}).eq('id',id);
-if(error){
-alert('Status Error: '+error.message);
-return;
-}
+const {error}=await db.from('orders').update({status}).eq('id',id);
+if(error){alert(error.message);return;}
 alert('Status अपडेट हो गया।');
 await renderAdmin();
 }
@@ -458,19 +353,25 @@ await renderAdmin();
 async function checkLogin(){
 const {data:{session}}=await db.auth.getSession();
 if(session&&session.user){
-await openCustomerDashboard(session.user);
+if(session.user.email===ADMIN_EMAIL){
+$('adminLoginBox').classList.add('hidden');
+$('adminDash').classList.remove('hidden');
+show('admin');
+await renderAdmin();
+}else await openCustomerDashboard(session.user);
 }
 }
 
-db.auth.onAuthStateChange((event,session)=>{
+db.auth.onAuthStateChange((event)=>{
 if(event==='SIGNED_OUT'){
 $('customerDashboard').classList.add('hidden');
 $('authBox').classList.remove('hidden');
 }
 });
-
 checkLogin();
 console.log('NAMAN PRINT PORTAL READY');
 </script>
 </body>
 </html>
+
+</script>
