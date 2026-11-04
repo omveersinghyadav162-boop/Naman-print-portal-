@@ -31,11 +31,25 @@ th{background:#e8f1fa}
 
 <div class="container">
 <div class="card" id="authBox">
-<h3>Customer Login / Registration</h3>
+<h3> NAMAN PRINT PORTAL LOGIN </h3>
+
+<button onclick="chooseLogin('customer')">
+Customer Login
+</button>
+
+<button class="green" onclick="chooseLogin('admin')">
+Admin Login
+</button>
+
+<h3 id="loginTitle">Login / Registration</h3>
+
 <input id="email" type="email" placeholder="Email">
 <input id="password" type="password" placeholder="Password">
+
 <button onclick="login()">Login</button>
+
 <button class="green" onclick="register()">New Registration</button>
+
 <p id="authMsg" class="msg"></p>
 </div>
 <div id="customerBox" class="hidden">
@@ -123,7 +137,16 @@ if(!email||password.length<6){el("authMsg").textContent="Email और कम स
 let {error}=await db.auth.signUp({email,password});
 el("authMsg").textContent=error?error.message:"Registration सफल!";
 }
-async function login(){
+function chooseLogin(type){
+  if(type==="customer"){
+    el("loginTitle").textContent="Customer Login";
+    el("authMsg").textContent="ग्राहक अपनी Email और Password डालें।";
+  }else{
+    el("loginTitle").textContent="Admin Login";
+    el("authMsg").textContent="Admin अपनी Email और Password डालें।";
+  }
+}
+  async function login(){
 let {data,error}=await db.auth.signInWithPassword({
 email:el("email").value.trim(),
 password:el("password").value
