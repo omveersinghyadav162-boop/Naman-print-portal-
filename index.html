@@ -225,8 +225,62 @@ data.filter(o=>o.status==="पूरा हुआ").length;
 ${["नया ऑर्डर","स्वीकार किया","काम जारी","पूरा हुआ","रद्द"].map(s=>`<option ${o.status===s?"selected":""}>${s}</option>`).join("")}
 </select>
 <button onclick="updateStatus(${Number(o.id)})">Update</button>
+<button onclick="printReceipt(${Number(o.id)})">Print Receipt</button>
 </td>
 </tr>`).join("");
+}
+async function printReceipt(id){
+  const {data,error}=await db.from("orders")
+    .select("*")
+    .eq("id",id)
+    .single();
+
+  if(error){
+    alert("Receipt Error: "+error.message);
+    return;
+  }
+
+  const receipt=window.open("","_blank");
+
+  if(!receipt){
+    alert("Browser में Pop-ups Allow करें");
+    return;
+  }
+
+  receipt.document.write(`
+  <html>
+  <head>
+  <title>NAMAN PRINT RECEIPT</title>
+  <style>
+  body{font-family:Arial;padding:25px}
+  .box{border:2px solid #12345a;padding:20px;max-width:500px;margin:auto}
+  h2{text-align:center;color:#12345a}
+  hr{border:1px dashed #999}
+  p{font-size:16px}
+  </style>
+  </head>
+  <body>
+  <div class="box">
+  <h2>NAMAN PRINT PORTAL</h2>
+  <h3 style="text-align:center">ORDER RECEIPT</h3>
+  <hr>
+  <p><b>Order No:</b> ${safe(data.order_number||data.order_no)}</p>
+  <p><b>Customer:</b> ${safe(data.customer_name||data.name)}</p>
+  <p><b>Mobile:</b> ${safe(data.mobile||data.phone)}</p>
+  <p><b>Service:</b> ${safe(data.service_name||data.services)}</p>
+  <p><b>Quantity:</b> ${data.qty||1}</p>
+  <p><b>Delivery:</b> ${safe(data.delivery)}</p>
+  <p><b>Status:</b> ${safe(data.status)}</p>
+  <p><b>Details:</b> ${safe(data.details)}</p>
+  <hr>
+  <p style="text-align:center">Thank You!</p>
+  </div>
+  <script>window.onload=function(){window.print()}<\/script>
+  </body>
+  </html>
+  `);
+
+  receipt.document.close();
 }
 async function updateStatus(id){
 let status=el("status"+id).value;
